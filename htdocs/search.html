@@ -28,14 +28,14 @@
             </div>
         </nav>
         <div style="width: 30%" >
-            <form class="form-signin">
+            <form action="/action" method="post" class="form-signin">
                 <h2 class="form-signin-heading">Search Catalog paramters</h2>
                 <label for="href" class="sr-only">href</label>
-                <input type="text" id="href" class="form-control" placeholder="href" required autofocus>
+                <input type="text" name="href" id="href" class="form-control" placeholder="href" autofocus>
                 <label for="rel" class="sr-only">rel</label>
-                <input type="text" id="rel" class="form-control" placeholder="rel" required>
+                <input type="text" name="rel" id="rel" class="form-control" placeholder="rel">
                 <label for="val" class="sr-only">val</label>
-                <input type="text" id="val" class="form-control" placeholder="val" required>
+                <input type="text" name="val" id="val" class="form-control" placeholder="val">
                 <button class="btn btn-lg btn-primary btn-block" type="submit">Search Now</button>
             </form>
         </div>
