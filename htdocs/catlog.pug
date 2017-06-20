@@ -28,8 +28,6 @@ html(lang='en')
       .jumbotron
         h3 Search Results:
         - var text = JSON.stringify(results,null,2,100).replace(/\n/g, '<br>')
-          //p(style = 'white-space: pre-wrap; font-family: monospace') !{text}
-          script(src='dist/json-formatter.js')
           p(style = 'white-space: pre-wrap; font-family: monospace') !{text}
 
 
