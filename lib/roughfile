@@ -1,0 +1,750 @@
+curl -v http://localhost:8001/cat?href=http://rbccps.org/KSCST/streetlight/dummy_sl_6001  -XPOST --header "Content-Type: application/json" --data ‘{"first": "george", "last": "washington", "username": true, "rememberEmail": "gwashington"}’
+
+{
+  "describes": "Schema of catalogue entries",
+  //"$schema": "http://json-schema.org/draft-04/schema#",
+  "version": "1.0.0",
+  "type": "object",
+  "definitions": {
+    "valueSchema": {
+      "type": "object",
+      "properties": {
+        "value": {
+          "type": [
+            "null",
+            "string",
+            "number",
+            "boolean",
+            "array"
+          ]
+        },
+        "description": {
+          "type": "string",
+          "describes": "some more info on this parameter"
+        },
+        "ontologyRef": {
+          "type": "string",
+          "format": "uri"
+        },
+        "readOnly": {
+          "type": "boolean",
+          "describes": "if true, indicates that the parameter is only readable"
+        },
+        "accessModifier": {
+          "enum": [
+            "public",
+            "private",
+            "protected"
+          ],
+          "describes": "public: everyone is allowed access to this resource. protected: only authorised access is allowed but everyone can see its presence, private: only owner of resource can see or access it"
+        }
+      },
+      "required": [
+        "value",
+        "description",
+        "accessModifier"
+      ]
+    },
+    "accessMechanismSchema": {
+      "type": "object",
+      "properties": {
+        "requestAccessSite": {
+          "type": "string",
+          "format": "uri",
+          "describes": "URI to get permissions (e.g. tokens) to access to the resource"
+        },
+        "accessEndPoint": {
+          "type": "string",
+          "format": "uri",
+          "describes": "URI to access the resource"
+        },
+        "additionalResourceInfo": {
+          "type": "string",
+          "format": "uri",
+          "describes": "Link to get additional information for this resource"
+        },
+        "subscriptionEndPoint": {
+          "type": "string",
+          "format": "uri",
+          "describes": "URI to subscribe to the resource changes"
+        }
+      },
+      "required": [
+        "accessEndPoint",
+        "subscriptionEndPoint"
+      ]
+    },
+    "ownerSchema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "describes": "Owner's Name"
+        },
+        "website": {
+          "type": "string",
+          "format": "uri"
+        }
+      },
+      "required": [
+        "name"
+      ]
+    },
+    "geoLocationSchema": {
+      "type": "object",
+      "properties": {
+        "address": {
+          "type": "string",
+          "describes": "Street address of the resource"
+        },
+        "mapid": {
+          "type": "string",
+          "format": "uri",
+          "describes": "Maps the resource on a map (see https://mapid.mapunity.in/)"
+        }
+      }
+    },
+    "latlongschema": {
+      "type": "object",
+      "properties": {
+        "value": {
+          "type": "number"
+        },
+        "GISOntologyRef": {
+          "type": "string",
+          "format": "uri"
+        }
+      },
+      "required": [
+        "value",
+        "GISOntologyRef"
+      ]
+    },
+    "resourceDataSchema": {
+      "type": "object",
+      "patternProperties": {
+        "[a-zA-Z0-9]+$": {
+          "$ref": "#/definitions/valueSchema"
+        }
+      },
+      "additionalProperties": false
+    },
+    "resourceParamsSchema": {
+      "type": "object",
+      "patternProperties": {
+        "[a-zA-Z0-9]+$": {
+          "$ref": "#/definitions/valueSchema"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "properties": {
+    "id": {
+      "type": "string",
+      "describes": "unique identifier of the data resource within this domain"
+    },
+    "UI": {
+      "type": "object",
+      "describes": "Globally unique identifier for the resource. E.g IMEI numbers, UUID, MacID etc.",
+      "$ref": "#/definitions/valueSchema"
+    },
+    "resourceSchemaVersion": {
+      "type": "string",
+      "describes": "Current version of the resource schema as per Semantic Versioning major:minor:patch"
+    },
+    "owner": {
+      "$ref": "#/definitions/ownerSchema"
+    },
+    "provider": {
+      "$ref": "#/definitions/ownerSchema"
+    },
+    "accessMechanism": {
+      "$ref": "#/definitions/accessMechanismSchema"
+    },
+    "geoLocation": {
+      "$ref": "#/definitions/geoLocationSchema"
+    },
+    "resourceType": {
+      "type": "string",
+      "describes": "Indicates the type of data source (e.g. streetlight )"
+    },
+    "tags": {
+      "type": "array",
+      "minItems": 0,
+      "describes": "any strings which annotates this resource",
+      "items": {
+        "type": "string"
+      }
+    },
+    "latitude": {
+      "$ref": "#/definitions/latlongschema",
+      "describes": "latitude"
+    },
+    "longitude": {
+      "$ref": "#/definitions/latlongschema",
+      "describes": "latitude"
+    },
+    "altitude": {
+      "$ref": "#/definitions/latlongschema",
+      "describes": "latitude"
+    },
+    "data_schema": {
+      "type": "object",
+      "describes": "Schema of the data from the information source",
+      "$ref": "#/definitions/resourceDataSchema"
+    },
+    "method_schema": {
+      "type": "object",
+      "describes": "Schema of the methods available to modify the behaviour of the data source (actuation, setting up of config parameters etc.)",
+      "patternProperties": {
+         "[a-zA-Z0-9]+$": {
+           "type": "object",
+           "properties": {
+              "params": {
+                "$ref": "#/definitions/resourceParamsSchema"
+              }
+           },
+           "required": [
+              "params"
+           ],
+           "additionalProperties": false
+         }
+      }
+    }
+  },
+  "additionalProperties": {
+    "type": ["string", "object"]
+  },
+  "required": [
+    "id",
+    "resourceType",
+    "owner"
+  ]
+}
+
+curl -v http://localhost:8001/cat?id=rbc_sl_1 -XPOST --header "Content-Type: application/json" --data '{
+  "id": "rbc_sl_1",
+  "resourceSchemaVersion": "1.0.0",
+  "resourceType": "streetlight",
+  "tags": [
+    "onstreet",
+    "Energy",
+    "still under development!"
+  ],
+  "UI": {
+    "value": "1234",
+    "description": "Globally Unique ID of the resource",
+    "accessModifier": "private"
+  },
+  "latitude": {
+    "value": 13.0143335,
+    "GISOntologyRef": "http://www.w3.org/2003/01/geo/wgs84_pos#"
+  },
+  "longitude": {
+    "value": 77.5678424,
+    "GISOntologyRef": "http://www.w3.org/2003/01/geo/wgs84_pos#"
+  },
+  "owner": {
+    "name": "IISC",
+    "website": "http://www.iisc.ac.in"
+  },
+  "provider": {
+    "name": "Robert Bosch Centre for Cyber Physical Systems, IISc",
+    "website": "http://rbccps.org"
+  },
+  "accessMechanism": {
+    "requestAccessSite": "http://rbccps.org/requestAccess",
+    "accessEndPoint": "https://rbccps.org/api/{id}",
+    "subscriptionEndPoint": "mqtt://rbccps.org/subscription/{id}",
+    "additionalResourceInfo": "http://rbccps.org/resourceInfo"
+  },
+  "data_schema": {
+    "samplingTime": {
+      "value": "number",
+      "format": "UTC",
+      "description": "Sampling Time",
+      "units": "seconds",
+      "readOnly": true,
+      "accessModifier": "public"
+    },
+    "caseTemperature": {
+      "value": "number",
+      "description": "Temperature of the device casing",
+      "units": "degreeCelsius",
+      "readOnly": true,
+      "accessModifier": "public"
+    },
+    "powerConsumption": {
+      "value": "number",
+      "description": "Power consumption of the device",
+      "units": "watts",
+      "readOnly": true,
+      "accessModifier": "public"
+    },
+    "luxOutput": {
+      "value": "number",
+      "description": "lux output of LED measured at LED",
+      "units": "lux",
+      "readOnly": true,
+      "accessModifier": "public"
+    },
+    "ambientLux": {
+      "value": "number",
+      "description": "lux value of ambient",
+      "units": "lux",
+      "readOnly": true,
+      "accessModifier": "public"
+    },
+    "targetPowerState": {
+      "value": [
+        "ON",
+        "OFF"
+      ],
+      "description": "If set to ON, turns ON the device. If OFF turns OFF the device. Writeable parameter. Writeable only allowed for authorized apps",
+      "accessModifier": "protected"
+    },
+    "targetBrightnessLevel": {
+      "value": "number",
+      "description": "Number between 0 to 100 to indicate the percentage brightness level. Writeable only allowed for authorized apps",
+      "units": "percent",
+      "accessModifier": "protected"
+    }
+  },
+  "method_schema": {
+    "setControlPolicy": {
+       "params": {
+           "controlPolicy": {
+              "value": [ "AUTO_TIMER", "AUTO_LUX", "MANUAL" ],
+              "description": "Indicates which of the behaviours the device should implement. AUTO_TIMER is timer based, AUTO_LUX uses ambient light and MANUAL is controlled by app. Writeable only allowed for authorized apps",
+             "accessModifier": "protected"
+           },
+           "targetOnTime": {
+             "value": "number",
+             "description": "Indicates time of day in seconds from 12 midnight when device turns ON in AUTO_TIMER. Writeable only allowed for authorized apps",
+             "units": "seconds",
+             "accessModifier": "protected"
+           },
+           "targetOffTime": {
+             "value": "number",
+             "description": "Indicates time of day in seconds from 12 midnight when device turns OFF in AUTO_TIMER. Writeable only allowed for authorized apps",
+             "units": "seconds",
+             "accessModifier": "protected"
+           },
+           "targetOnLux": {
+             "value": "number",
+             "description": "Indicates ambient lux when device turns ON in AUTO_LUX. Writeable only allowed for authorized apps",
+             "units": "seconds",
+             "accessModifier": "protected"
+           },
+           "targetOffLux": {
+             "value": "number",
+             "description": "Indicates ambient lux when device turns OFF in AUTO_LUX. Writeable only allowed for authorized apps",
+             "units": "seconds",
+             "accessModifier": "protected"
+           }
+       }
+    }
+  }
+}'
+
+curl -v http://localhost:8001/cat?id=rbc_sl_1 -XPOST --header "Content-Type: application/json" --data '{
+  "id": "rbc_sl_2",
+  "resourceSchemaVersion": "1.0.0",
+  "resourceType": "streetlight",
+  "tags": [
+    "onstreet",
+    "Energy",
+    "still under development!"
+  ],
+  "UI": {
+    "value": "1235",
+    "description": "Globally Unique ID of the resource",
+    "accessModifier": "private"
+  },
+  "latitude": {
+    "value": 13.0143335,
+    "GISOntologyRef": "http://www.w3.org/2003/01/geo/wgs84_pos#"
+  },
+  "longitude": {
+    "value": 77.5678424,
+    "GISOntologyRef": "http://www.w3.org/2003/01/geo/wgs84_pos#"
+  },
+  "owner": {
+    "name": "IISC",
+    "website": "http://www.iisc.ac.in"
+  },
+  "provider": {
+    "name": "Robert Bosch Centre for Cyber Physical Systems, IISc",
+    "website": "http://rbccps.org"
+  },
+  "accessMechanism": {
+    "requestAccessSite": "http://rbccps.org/requestAccess",
+    "accessEndPoint": "https://rbccps.org/api/{id}",
+    "subscriptionEndPoint": "mqtt://rbccps.org/subscription/{id}",
+    "additionalResourceInfo": "http://rbccps.org/resourceInfo"
+  },
+  "data_schema": {
+    "samplingTime": {
+      "value": "number",
+      "format": "UTC",
+      "description": "Sampling Time",
+      "units": "seconds",
+      "readOnly": true,
+      "accessModifier": "public"
+    },
+    "caseTemperature": {
+      "value": "number",
+      "description": "Temperature of the device casing",
+      "units": "degreeCelsius",
+      "readOnly": true,
+      "accessModifier": "public"
+    },
+    "powerConsumption": {
+      "value": "number",
+      "description": "Power consumption of the device",
+      "units": "watts",
+      "readOnly": true,
+      "accessModifier": "public"
+    },
+    "luxOutput": {
+      "value": "number",
+      "description": "lux output of LED measured at LED",
+      "units": "lux",
+      "readOnly": true,
+      "accessModifier": "public"
+    },
+    "ambientLux": {
+      "value": "number",
+      "description": "lux value of ambient",
+      "units": "lux",
+      "readOnly": true,
+      "accessModifier": "public"
+    },
+    "targetPowerState": {
+      "value": [
+        "ON",
+        "OFF"
+      ],
+      "description": "If set to ON, turns ON the device. If OFF turns OFF the device. Writeable parameter. Writeable only allowed for authorized apps",
+      "accessModifier": "protected"
+    },
+    "targetBrightnessLevel": {
+      "value": "number",
+      "description": "Number between 0 to 100 to indicate the percentage brightness level. Writeable only allowed for authorized apps",
+      "units": "percent",
+      "accessModifier": "protected"
+    }
+  },
+  "method_schema": {
+    "setControlPolicy": {
+       "params": {
+           "controlPolicy": {
+              "value": [ "AUTO_TIMER", "AUTO_LUX", "MANUAL" ],
+              "description": "Indicates which of the behaviours the device should implement. AUTO_TIMER is timer based, AUTO_LUX uses ambient light and MANUAL is controlled by app. Writeable only allowed for authorized apps",
+             "accessModifier": "protected"
+           },
+           "targetOnTime": {
+             "value": "number",
+             "description": "Indicates time of day in seconds from 12 midnight when device turns ON in AUTO_TIMER. Writeable only allowed for authorized apps",
+             "units": "seconds",
+             "accessModifier": "protected"
+           },
+           "targetOffTime": {
+             "value": "number",
+             "description": "Indicates time of day in seconds from 12 midnight when device turns OFF in AUTO_TIMER. Writeable only allowed for authorized apps",
+             "units": "seconds",
+             "accessModifier": "protected"
+           },
+           "targetOnLux": {
+             "value": "number",
+             "description": "Indicates ambient lux when device turns ON in AUTO_LUX. Writeable only allowed for authorized apps",
+             "units": "seconds",
+             "accessModifier": "protected"
+           },
+           "targetOffLux": {
+             "value": "number",
+             "description": "Indicates ambient lux when device turns OFF in AUTO_LUX. Writeable only allowed for authorized apps",
+             "units": "seconds",
+             "accessModifier": "protected"
+           }
+       }
+    }
+  }
+}'
+
+curl -v http://localhost:8001/cat?id=rbc_sl_1 -XPOST --header "Content-Type: application/json" --data '{
+  "refCatalogueSchema": "https://raw.githubusercontent.com/amrutur/smart_city_schemas/master/catalogue_schema_1.txt",
+  "id": "rbc_sl_1",
+  "resourceSchemaVersion": "1.0.0",
+  "resourceType": "streetlight",
+  "tags": [
+    "onstreet",
+    "Energy",
+    "still under development!"
+  ],
+  "UI": {
+    "value": "1234", "description": "Globally Unique ID of the resource",
+    "accessModifier": "private"
+  },
+  "latitude": {
+    "value": 13.0143335,
+    "GISOntologyRef": "http://www.w3.org/2003/01/geo/wgs84_pos#"
+  },
+  "longitude": {
+    "value": 77.5678424,
+    "GISOntologyRef": "http://www.w3.org/2003/01/geo/wgs84_pos#"
+  },
+  "owner": {
+    "name": "IISC",
+    "website": "http://www.iisc.ac.in"
+  },
+  "provider": {
+    "name": "Robert Bosch Centre for Cyber Physical Systems, IISc",
+    "website": "http://rbccps.org"
+  },
+  "accessMechanism": {
+    "requestAccessSite": "http://rbccps.org/requestAccess",
+    "accessEndPoint": "https://rbccps.org/api/{id}",
+    "subscriptionEndPoint": "mqtt://rbccps.org/subscription/{id}",
+    "additionalResourceInfo": "http://rbccps.org/resourceInfo"
+  },
+  "data_schema": {
+    "type": "object",
+    "properties": {
+        "samplingTime": {
+          "type": "number",
+          "description": "Sampling Time in UTC format",
+          "units": "seconds",
+          "readOnly": "true",
+          "accessModifier": "public"
+        },
+        "caseTemperature": {
+          "type": "number",
+          "description": "Temperature of the device casing",
+          "units": "degreeCelsius",
+          "readOnly": "true",
+          "accessModifier": "public"
+        },
+        "powerConsumption": {
+          "type": "number",
+          "description": "Power consumption of the device",
+          "units": "watts",
+          "readOnly": "true",
+          "accessModifier": "public"
+        },
+        "luxOutput": {
+          "type": "number",
+          "description": "lux output of LED measured at LED",
+          "units": "lux",
+          "readOnly": "true",
+          "accessModifier": "public"
+        },
+        "ambientLux": {
+          "type": "number",
+          "description": "lux value of ambient",
+          "units": "lux",
+          "readOnly": "true",
+          "accessModifier": "public"
+        },
+        "targetPowerState": {
+          "type": "string",
+          "enum": [
+            "ON",
+            "OFF"
+          ],
+          "description": "If set to ON, turns ON the device. If OFF turns OFF the device. Writeable parameter. Writeable only allowed for authorized apps",
+          "accessModifier": "protected"
+        },
+        "targetBrightnessLevel": {
+          "type": "number",
+          "description": "Number between 0 to 100 to indicate the percentage brightness level. Writeable only allowed for authorized apps",
+          "units": "percent",
+          "accessModifier": "protected"
+        },
+        "targetControlPolicy": {
+          "enum": [
+            "AUTO_TIMER",
+            "AUTO_LUX",
+            "MANUAL"
+          ],
+          "description": "Indicates which of the behaviours the device should implement. AUTO_TIMER is timer based, AUTO_LUX uses ambient light and MANUAL is controlled by app. Writeable only allowed for authorized apps",
+          "accessModifier": "protected"
+        },
+        "targetAutoTimerParams": {
+          "type": "object",
+          "properties": {
+            "targetOnTime": {
+              "type": "number",
+              "description": "Indicates time of day in seconds from 12 midnight when device turns ON in AUTO_TIMER. Writeable only allowed for authorized apps",
+              "units": "seconds",
+              "accessModifier": "protected"
+            },
+            "targetOffTime": {
+              "type": "number",
+              "description": "Indicates time of day in seconds from 12 midnight when device turns OFF in AUTO_TIMER. Writeable only allowed for authorized apps",
+              "units": "seconds",
+              "accessModifier": "protected"
+            }
+          }
+        },
+        "targetAutoLuxParams": {
+          "type": "object",
+          "properties": {
+            "targetOnLux": {
+              "type": "number",
+              "description": "Indicates ambient lux when device turns ON in AUTO_LUX. Writeable only allowed for authorized apps",
+              "units": "lux",
+              "accessModifier": "protected"
+            },
+            "targetOffLux": {
+              "type": "number",
+              "description": "Indicates ambient lux when device turns OFF in AUTO_LUX. Writeable only allowed for authorized apps",
+              "units": "lux",
+              "accessModifier": "protected"
+            }
+          }
+        }
+    },
+    "additionalProperties": false
+  }
+}'
+
+curl -v http://localhost:8001/cat?id=rbc_sl_1 -XPOST --header "Content-Type: application/json" --data '{
+  "refCatalogueSchema": "https://raw.githubusercontent.com/amrutur/smart_city_schemas/master/catalogue_schema_1.txt",
+  "id": "rbc_sl_1",
+  "resourceSchemaVersion": "1.0.0",
+  "resourceType": "streetlight",
+  "tags": [
+    "onstreet",
+    "Energy",
+    "still under development!"
+  ],
+  "UI": {
+    "value": "1234", "description": "Globally Unique ID of the resource",
+    "accessModifier": "private"
+  },
+  "latitude": {
+    "value": 13.0143335,
+    "ontologyRef": "http://www.w3.org/2003/01/geo/wgs84_pos#"
+  },
+  "longitude": {
+    "value": 77.5678424,
+    "ontologyRef": "http://www.w3.org/2003/01/geo/wgs84_pos#"
+  },
+  "owner": {
+    "name": "IISC",
+    "website": "http://www.iisc.ac.in"
+  },
+  "provider": {
+    "name": "Robert Bosch Centre for Cyber Physical Systems, IISc",
+    "website": "http://rbccps.org"
+  },
+  "accessMechanism": {
+    "requestAccessSite": "http://rbccps.org/requestAccess",
+    "accessEndPoint": "https://rbccps.org/api/{id}",
+    "subscriptionEndPoint": "mqtt://rbccps.org/subscription/{id}",
+    "additionalResourceInfo": "http://rbccps.org/resourceInfo"
+  },
+  "data_schema": {
+    "type": "object",
+    "properties": {
+        "dataSamplingInstant": {
+          "type": "string",
+          "description": "Sampling Time in UTC format",
+          "units": "seconds",
+          "readOnly": "true",
+          "accessModifier": "public"
+        },
+        "caseTemperature": {
+          "type": "number",
+          "description": "Temperature of the device casing",
+          "units": "degreeCelsius",
+          "readOnly": "true",
+          "accessModifier": "public"
+        },
+        "powerConsumption": {
+          "type": "number",
+          "description": "Power consumption of the device",
+          "units": "watts",
+          "readOnly": "true",
+          "accessModifier": "public"
+        },
+        "luxOutput": {
+          "type": "number",
+          "description": "lux output of LED measured at LED",
+          "units": "lux",
+          "readOnly": "true",
+          "accessModifier": "public"
+        },
+        "ambientLux": {
+          "type": "number",
+          "description": "lux value of ambient",
+          "units": "lux",
+          "readOnly": "true",
+          "accessModifier": "public"
+        },
+        "targetPowerState": {
+          "type": "string",
+          "enum": [
+            "ON",
+            "OFF"
+          ],
+          "description": "If set to ON, turns ON the device. If OFF turns OFF the device. Writeable parameter. Writeable only allowed for authorized apps",
+          "accessModifier": "protected"
+        },
+        "targetBrightnessLevel": {
+          "type": "number",
+          "description": "Number between 0 to 100 to indicate the percentage brightness level. Writeable only allowed for authorized apps",
+          "units": "percent",
+          "accessModifier": "protected"
+        },
+        "targetControlPolicy": {
+          "enum": [
+            "AUTO_TIMER",
+            "AUTO_LUX",
+            "MANUAL"
+          ],
+          "description": "Indicates which of the behaviours the device should implement. AUTO_TIMER is timer based, AUTO_LUX uses ambient light and MANUAL is controlled by app. Writeable only allowed for authorized apps",
+          "accessModifier": "protected"
+        },
+        "targetAutoTimerParams": {
+          "type": "object",
+          "properties": {
+            "targetOnTime": {
+              "type": "number",
+              "description": "Indicates time of day in seconds from 12 midnight when device turns ON in AUTO_TIMER. Writeable only allowed for authorized apps",
+              "units": "seconds",
+              "accessModifier": "protected"
+            },
+            "targetOffTime": {
+              "type": "number",
+              "description": "Indicates time of day in seconds from 12 midnight when device turns OFF in AUTO_TIMER. Writeable only allowed for authorized apps",
+              "units": "seconds",
+              "accessModifier": "protected"
+            }
+          }
+        },
+        "targetAutoLuxParams": {
+          "type": "object",
+          "properties": {
+            "targetOnLux": {
+              "type": "number",
+              "description": "Indicates ambient lux when device turns ON in AUTO_LUX. Writeable only allowed for authorized apps",
+              "units": "lux",
+              "accessModifier": "protected"
+            },
+            "targetOffLux": {
+              "type": "number",
+              "description": "Indicates ambient lux when device turns OFF in AUTO_LUX. Writeable only allowed for authorized apps",
+              "units": "lux",
+              "accessModifier": "protected"
+            }
+          }
+        }
+    },
+    "additionalProperties": false
+  }
+}'
+
+curl -v http://localhost:8001/cat?href=RBCCPS_streetlight_1003  -XPOST --header "Content-Type: application/json" --data '{"href":"RBCCPS_streetlight_1003", "item-metadata": [{"refCatalogueSchema": "https://raw.githubusercontent.com/amrutur/smart_city_schemas/master/catalogue_schema_1.txt", "id": "RBCCPS_streetlight_1003", "resourceSchemaVersion": "1.0.0", "resourceType": "streetlight", "tags": ["onstreet", "Energy", "still under development!"], "UI": {"value": "aa-bb-cc-dd-ee-ff", "description": "Globally Unique ID of the resource", "accessModifier": "private"}, "latitude": {"value": 30.4567, "ontologyRef": "http://www.w3.org/2003/01/geo/wgs84_pos#"}, "longitude": {"value": 45.9876, "ontologyRef": "http://www.w3.org/2003/01/geo/wgs84_pos#"}, "owner": {"name": "Indian Institute Of Science", "website": "http://www.iisc.ac.in"}, "provider": {"name": "Robert Bosch Centre for Cyber Physical Systems, IISc", "website": "http://www.rbccps.org"}, "geoLocation": {"address": "80 ft Road, 560012"}, "accessMechanism": {"requestAccessSite": "http://rbccps.org/middleware/requestAccess", "accessEndPoint": "http://rbccps.org/middleware/api/0.1/", "subscriptionEndPoint": "mqqt://rbccps.org/subscription/RBCCPS_streetlight_1001", "additionalResourceInfo": "http://rbccps.org/resourceInfo/RBCCPS_streetlight_1001"}, "data_schema": {"type": "object", "properties": {"dataSamplingInstant": {"type": "string", "description": "Sampling Time in UTC format", "units": "seconds", "readOnly": "true", "accessModifier": "public"}, "caseTemperature": {"type": "number", "description": "Temperature of the device casing", "units": "degreeCelsius", "readOnly": "true", "accessModifier": "public"}, "powerConsumption": {"type": "number", "description": "Power consumption of the device", "units": "watts", "readOnly": "true", "accessModifier": "public"}, "luxOutput": {"type": "number", "description": "lux output of LED measured at LED", "units": "lux", "readOnly": "true", "accessModifier": "public"}, "ambientLux": {"type": "number", "description": "lux value of ambient", "units": "lux", "readOnly": "true", "accessModifier": "public"}, "targetPowerState": {"type": "string", "enum": ["ON", "OFF"], "description": "If set to ON, turns ON the device. If OFF turns OFF the device. Writeable parameter. Writeable only allowed for authorized apps", "accessModifier": "protected"}, "targetBrightnessLevel": {"type": "number", "description": "Number between 0 to 100 to indicate the percentage brightness level. Writeable only allowed for authorized apps", "units": "percent", "accessModifier": "protected"}, "targetControlPolicy": {"enum": ["AUTO_TIMER", "AUTO_LUX", "MANUAL"], "description": "Indicates which of the behaviours the device should implement. AUTO_TIMER is timer based, AUTO_LUX uses ambient light and MANUAL is controlled by app. Writeable only allowed for authorized apps", "accessModifier": "protected"}, "targetAutoTimerParams": {"type": "object", "properties": {"targetOnTime": {"type": "number", "description": "Indicates time of day in seconds from 12 midnight when device turns ON in AUTO_TIMER. Writeable only allowed for authorized apps", "units": "seconds", "accessModifier": "protected"}, "targetOffTime": {"type": "number", "description": "Indicates time of day in seconds from 12 midnight when device turns OFF in AUTO_TIMER. Writeable only allowed for authorized apps", "units": "seconds", "accessModifier": "protected"}}}, "targetAutoLuxParams": {"type": "object", "properties": {"targetOnLux": {"type": "number", "description": "Indicates ambient lux when device turns ON in AUTO_LUX. Writeable only allowed for authorized apps", "units": "lux", "accessModifier": "protected"}, "targetOffLux": {"type": "number", "description": "Indicates ambient lux when device turns OFF in AUTO_LUX. Writeable only allowed for authorized apps", "units": "lux", "accessModifier": "protected"}}}}, "additionalProperties": false}}]}'

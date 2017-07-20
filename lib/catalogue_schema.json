@@ -1,0 +1,266 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "describes": "Schema of catalogue entries",
+  "version": "1.0.0",
+  "type": "object",
+  "definitions": {
+    "valueSchema": {
+      "type": "object",
+      "properties": {
+        "value": {
+          "type": [
+            "null",
+            "string",
+            "number",
+            "boolean",
+            "array"
+          ]
+        },
+        "description": {
+          "type": "string",
+          "describes": "some more info on this parameter"
+        },
+        "ontologyRef": {
+          "type": "string",
+          "format": "uri"
+        },
+        "readOnly": {
+          "type": "boolean",
+          "describes": "if true, indicates that the parameter is only readable"
+        },
+        "accessModifier": {
+          "enum": [
+            "public",
+            "private",
+            "protected"
+          ],
+          "describes": "public: everyone is allowed access to this resource. protected: only authorised access is allowed but everyone can see its presence, private: only owner of resource can see or access it"
+        }
+      },
+      "required": [
+        "value",
+        "description",
+        "accessModifier"
+      ]
+    },
+    "accessMechanismSchema": {
+      "type": "object",
+      "properties": {
+        "requestAccessSite": {
+          "type": "string",
+          "format": "uri",
+          "describes": "URI to get permissions (e.g. tokens) to access to the resource"
+        },
+        "accessEndPoint": {
+          "type": "string",
+          "format": "uri",
+          "describes": "URI to access the resource"
+        },
+        "additionalResourceInfo": {
+          "type": "string",
+          "format": "uri",
+          "describes": "Link to get additional information for this resource"
+        },
+        "subscriptionEndPoint": {
+          "type": "string",
+          "format": "uri",
+          "describes": "URI to subscribe to the resource changes"
+        }
+      },
+      "required": [
+        "accessEndPoint",
+        "subscriptionEndPoint"
+      ]
+    },
+    "ownerSchema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "describes": "Owner's Name"
+        },
+        "website": {
+          "type": "string",
+          "format": "uri"
+        }
+      },
+      "required": [
+        "name"
+      ]
+    },
+    "geoLocationSchema": {
+      "type": "object",
+      "properties": {
+        "address": {
+          "type": "string",
+          "describes": "Street address of the resource"
+        },
+        "mapid": {
+          "type": "string",
+          "format": "uri",
+          "describes": "Maps the resource on a map (see https://mapid.mapunity.in/)"
+        }
+      }
+    },
+    "latlongschema": {
+      "type": "object",
+      "properties": {
+        "value": {
+          "type": "number"
+        },
+        "ontologyRef": {
+          "type": "string",
+          "format": "uri"
+        }
+      },
+      "required": [
+        "value",
+        "ontologyRef"
+      ]
+    },
+    "resourceDataSchema": {
+      "type": "object",
+      "patternProperties": {
+        "[a-zA-Z0-9]+$": {
+          "$ref": "#/definitions/valueSchema"
+        }
+      },
+      "additionalProperties": false
+    },
+    "resourceDataSchema1": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": [
+            "string"
+          ]
+        },
+        "enum": {
+          "type": [
+            "array"
+          ]
+        },
+        "properties": {
+          "type": "object",
+          "patternProperties": {
+            "[a-zA-Z0-9]+$": {
+              "$ref": "#/definitions/resourceDataSchema1"
+            }
+          }
+        },
+        "description": {
+          "type": "string"
+        },
+        "units": {
+          "type": "string"
+        },
+        "readOnly": {
+          "enum": ["true", "false"]
+        },
+        "accessModifier": {
+          "enum": [ "public", "private", "protected" ]
+        }
+      },
+      "anyOf": [
+      { "required": [ "type" ]},
+      { "required": [ "enum" ]}
+      ]
+    },
+    "resourceParamsSchema": {
+      "type": "object",
+      "patternProperties": {
+        "[a-zA-Z0-9]+$": {
+          "$ref": "#/definitions/valueSchema"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "properties": {
+    "id": {
+      "type": "string",
+      "describes": "unique identifier of the data resource within this domain"
+    },
+    "refCatalogueSchema": {
+      "type": "string",
+      "format": "uri",
+      "describes": "Reference to the catalogue schema to which this entry adheres"
+    },
+    "UI": {
+      "type": "object",
+      "describes": "Globally unique identifier for the resource. E.g IMEI numbers, UUID, MacID etc.",
+      "$ref": "#/definitions/valueSchema"
+    },
+    "resourceSchemaVersion": {
+      "type": "string",
+      "describes": "Current version of the resource schema as per Semantic Versioning major:minor:patch"
+    },
+    "owner": {
+      "$ref": "#/definitions/ownerSchema"
+    },
+    "provider": {
+      "$ref": "#/definitions/ownerSchema"
+    },
+    "accessMechanism": {
+      "$ref": "#/definitions/accessMechanismSchema"
+    },
+    "geoLocation": {
+      "$ref": "#/definitions/geoLocationSchema"
+    },
+    "resourceType": {
+      "type": "string",
+      "describes": "Indicates the type of data source (e.g. streetlight )"
+    },
+    "tags": {
+      "type": "array",
+      "minItems": 0,
+      "describes": "any strings which annotates this resource",
+      "items": {
+        "type": "string"
+      }
+    },
+    "latitude": {
+      "$ref": "#/definitions/latlongschema",
+      "describes": "latitude"
+    },
+    "longitude": {
+      "$ref": "#/definitions/latlongschema",
+      "describes": "latitude"
+    },
+    "altitude": {
+      "$ref": "#/definitions/latlongschema",
+      "describes": "latitude"
+    },
+    "data_schema": {
+      "describes": "Schema of the data from the information source",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "describes": {
+          "type": "string"
+        },
+        "properties": {
+          "type": "object",
+          "patternProperties": {
+            "[a-zA-Z0-9]+$": {
+              "$ref": "#/definitions/resourceDataSchema1"
+            }
+          }
+        },
+        "additionalProperties": {
+           "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": {
+    "type": ["string", "object"]
+  },
+  "required": [
+    "id",
+    "resourceType",
+    "owner"
+  ]
+}
