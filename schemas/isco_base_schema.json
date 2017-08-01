@@ -1,0 +1,81 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "describes": "Base schema of catalogue entries",
+  "version": "1.0.0",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "describes": "unique identifier of the data resource within this domain"
+    },
+    "refCatalogueSchema": {
+      "type": "string",
+      "describes": "Reference to the catalogue schema to which this entry adheres"
+    },
+    "UI": {
+      "type": "object",
+      "describes": "Globally unique identifier for the resource. E.g IMEI numbers, UUID, MacID etc.",
+      "$ref": "isco_base_def.json#/definitions/valueSchema"
+    },
+    "resourceSchemaVersion": {
+      "type": "string",
+      "describes": "Current version of the resource schema as per Semantic Versioning major:minor:patch"
+    },
+    "owner": {
+      "$ref": "isco_base_def.json#/definitions/ownerSchema"
+    },
+    "provider": {
+      "$ref": "isco_base_def.json#/definitions/ownerSchema"
+    },
+    "accessMechanism": {
+      "$ref": "isco_base_def.json#/definitions/accessMechanismSchema"
+    },
+    "resourceType": {
+      "type": "string",
+      "describes": "Indicates the type of data source (e.g. streetlight )"
+    },
+    "tags": {
+      "type": "array",
+      "minItems": 0,
+      "describes": "any strings which annotates this resource",
+      "items": {
+        "type": "string"
+      }
+    },
+    "data_schema": {
+      "describes": "Schema of the data from the information source",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "describes": {
+          "type": "string"
+        },
+        "properties": {
+          "type": "object",
+          "patternProperties": {
+            "[a-zA-Z0-9]+$": {
+              "$ref": "isco_base_def.json#/definitions/resourceDataSchema"
+            }
+          }
+        },
+        "additionalProperties": {
+           "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": {
+    "type": ["string", "object"]
+  },
+  "required": [
+    "id",
+    "refCatalogueSchema",
+    "owner",
+    "provider",
+    "accessMechanism",
+    "resourceType",
+    "tags"
+  ]
+}

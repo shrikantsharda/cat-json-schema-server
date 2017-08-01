@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "describes": "Schema of catalogue entries",
+  "version": "1.0.0",
+  "type": "object",
+  "allOf": [
+   {"$ref": "schemas/isco_base_schema.json#"}
+  ],
+  "properties": {
+    "latitude": {
+      "$ref": "schemas/isco_base_def.json#/definitions/latlongschema",
+      "describes": "latitude"
+    },
+    "longitude": {
+      "$ref": "schemas/isco_base_def.json#/definitions/latlongschema",
+      "describes": "latitude"
+    },
+    "altitude": {
+      "$ref": "schemas/isco_base_def.json#/definitions/latlongschema",
+      "describes": "altitude"
+    },
+    "geoLocation": {
+      "$ref": "schemas/isco_base_def.json#/definitions/geoLocationSchema"
+    }
+  },
+  "required":[
+    "latitude",
+    "longitude"
+  ]
+}
